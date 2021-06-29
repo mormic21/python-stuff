@@ -7,7 +7,7 @@ class Item:
         self.name = name
 
 class Potion(Item):
-    def __init__(self, weight, worth):
+    def __init__(self, weight, worth, name):
         Item.__init__(self, weight, worth, "Potion")
 
 class HealthPotion(Potion):
