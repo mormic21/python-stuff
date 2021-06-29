@@ -1,17 +1,18 @@
 import random
 
 class Item:
-    def __init__(self, weight, worth):
+    def __init__(self, weight, worth, name):
         self.weight = weight
         self.worth = worth
+        self.name = name
 
 class Potion(Item):
     def __init__(self, weight, worth):
-        Item.__init__(self, weight, worth)
+        Item.__init__(self, weight, worth, "Potion")
 
 class HealthPotion(Potion):
     def __init__(self, weight, worth, regenerated_health):
-        Potion.__init__(self, weight, worth)
+        Potion.__init__(self, weight, worth, "Health")
         self.regenerated_health = regenerated_health
 
 class Character:
@@ -22,11 +23,11 @@ class Character:
 
     def get_hit(self, ad):
         self.hp = self.hp - ad
-        if self.ho <= 0:
+        if self.hp <= 0:
             self.die()
 
     def die(self):
-        print("Character died")
+        print(self.name + " died")
 
     def is_dead(self):
         return self.hp <= 0
@@ -50,6 +51,10 @@ class Ork(Character):
     def __init__(self):
         Character.__init__(self, 300, 30, "Ork")
 
+class Vader(Character):
+    def __init__(self):
+        Character.__init__(self, 680, 90, "Darth Vader")
+
 class Field:
     def __init__(self, enemies):
         self.enemies = enemies
@@ -62,13 +67,17 @@ class Field:
 
     @staticmethod
     def gen_random():
-        rand = random.randint(0, 2)
+        rand = random.randint(0, 6)
         if rand == 0:
             return Field([])
         if rand == 1:
+            return Field([])
+        if rand == 2 or rand == 3:
             return Field([Ork()])
-        if rand == 2:
+        if rand == 4 or rand == 5:
             return Field([Goblin(), Goblin(), Ork()])
+        if rand == 6:
+            return Field([Vader()])
 
 class Map:
     def __init__(self, width, height):
@@ -126,6 +135,7 @@ def fight(p, m):
             enemies.remove(enemies[0])
         for i in enemies:
             p.get_hit(i.ad)
+        print("deine hp: " + str(p.hp))
 
 def forward(p, m):
     m.forward()
