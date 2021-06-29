@@ -1,19 +1,28 @@
 import random
 
 class Item:
-    def __init__(self, weight, worth, name):
-        self.weight = weight
-        self.worth = worth
+    def __init__(self, name):
         self.name = name
 
-class Potion(Item):
-    def __init__(self, weight, worth, name):
-        Item.__init__(self, weight, worth, "Potion")
+class Health(Item):
+    def __init__(self):
+        Item.__init__(self, "Health")
+        self.plushealth = 80
 
-class HealthPotion(Potion):
-    def __init__(self, weight, worth, regenerated_health):
-        Potion.__init__(self, weight, worth, "Health")
-        self.regenerated_health = regenerated_health
+class Sword(Item):
+    def __init__(self):
+        Item.__init__(self, "Sword")
+        self.plusad = 80
+
+class Lightsaber(Item):
+    def __init__(self):
+        Item.__init__(self, "lightsaber")
+        self.plusad = 180
+
+class Shield(Item):
+    def __init__(self):
+        Item.__init__(self, "shield")
+        self.plushealth = 155
 
 class Character:
     def __init__(self, hp, ad, name):
@@ -67,17 +76,23 @@ class Field:
 
     @staticmethod
     def gen_random():
-        rand = random.randint(0, 6)
-        if rand == 0:
+        rand = random.randint(0, 25)
+        if rand == 0 or rand == 1 or rand == 2:
             return Field([])
-        if rand == 1:
-            return Field([])
-        if rand == 2 or rand == 3:
+        if rand == 3 or rand == 4:
+            return Field([Sword()])
+        if rand == 5 or rand == 6 or rand == 7 or rand == 8 or rand == 9:
+            return Field([Health()])
+        if rand == 10 or rand == 11 or rand == 12 or rand == 13 or rand == 14:
             return Field([Ork()])
-        if rand == 4 or rand == 5:
+        if rand == 15 or rand == 16 or rand == 17 or rand == 18 or rand == 19:
             return Field([Goblin(), Goblin(), Ork()])
-        if rand == 6:
+        if rand == 20 or rand == 21 or rand == 22:
             return Field([Vader()])
+        if rand == 23 or rand == 24:
+            return Field([Goblin(), Goblin(), Ork(), Goblin(), Goblin(), Ork(), Lightsaber()])
+        if rand == 25:
+            return Field([Goblin(), Goblin(), Ork(), Ork(), Vader(), Shield()])
 
 class Map:
     def __init__(self, width, height):
@@ -124,36 +139,61 @@ class Map:
 def pickup(p, m):
     pass
 
-def rest(p, m):
-    p.rest()
-
 def fight(p, m):
     enemies = m.get_enemies()
+    num = len(enemies)
+    ok = True
     while len(enemies) > 0:
-        enemies[0].get_hit(p.ad)
-        if enemies[0].is_dead():
-            enemies.remove(enemies[0])
-        for i in enemies:
-            p.get_hit(i.ad)
-        print("deine hp: " + str(p.hp))
+        if isinstance(enemies[0], Character):
+            enemies[0].get_hit(p.ad)
+            if enemies[0].is_dead():
+                enemies.remove(enemies[0])
+                p.ad = p.ad - 10
+            for i in enemies:
+                p.get_hit(i.ad)
+            print("hp: " + str(p.hp) + "; ad: " + str(p.ad))
+        else:
+            print("Du kannst nicht gegen ein Item kämpfen!")
+            ok = False
+            break
+    if ok:
+        p.hp = p.hp + (15 * num)
+
 
 def forward(p, m):
     m.forward()
+    get_koordinates(p, m)
 
 def backwards(p, m):
     m.backwards()
+    get_koordinates(p, m)
 
 def right(p, m):
     m.right()
+    get_koordinates(p, m)
 
 def left(p, m):
     m.left()
+    get_koordinates(p, m)
 
 def save():
     pass
 
 def load():
     pass
+
+def get_hp(p, m):
+    print("hp: "+ str(p.hp))
+
+def get_ad(p, m):
+    print("ad: "+ str(p.ad))
+
+def get_info(p, m):
+    get_hp(p, m)
+    get_ad(p, m)
+
+def get_koordinates(p, m):
+    print("x: "+str(m.x) + " y: "+str(m.y))
 
 def quit_game(p, m):
     print("Quit!")
@@ -162,18 +202,50 @@ def quit_game(p, m):
 def print_help(p, m):
     print(Commands.keys())
 
+def use_item(p, m):
+    enemies = m.get_enemies()
+    ok = False
+    for i in enemies:
+        if isinstance(i, Item):
+            if isinstance(i, Health):
+                p.hp = p.hp + i.plushealth
+                enemies.remove(i)
+                print("hp: " + str(p.hp))
+                ok = True
+            if isinstance(i, Sword):
+                p.ad = p.ad + i.plusad
+                enemies.remove(i)
+                print("ad: " + str(p.ad))
+                ok = True
+            if isinstance(i, Lightsaber):
+                p.ad = p.ad + i.plusad
+                enemies.remove(i)
+                print("ad: " + str(p.ad))
+                ok = True
+            if isinstance(i, Shield):
+                p.hp = p.hp + i.plushealth
+                enemies.remove(i)
+                print("hp: " + str(p.hp))
+                ok = True
+    if not ok:
+        print("Kein Nutzbares Item in Sicht")
+
+
 Commands = {
     'help': print_help,
     'quit': quit_game,
-    'pickup': pickup,
-    'forward': forward,
-    'right': right,
-    'left': left,
-    'backwards': backwards,
+    'hp': get_hp,
+    'ad': get_ad,
+    'info': get_info,
+    #'pickup': pickup,
+    'fd': forward,
+    'rt': right,
+    'lt': left,
+    'bs': backwards,
     'fight': fight,
-    'save': save,
-    'load': load,
-    'rest': rest,
+    #'save': save,
+    #'load': load,
+    'use': use_item
 }
 
 if __name__ == '__main__':
