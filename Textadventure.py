@@ -1,3 +1,5 @@
+import random
+
 class Item:
     def __init__(self, weight, worth):
         self.weight = weight
@@ -13,9 +15,10 @@ class HealthPotion(Potion):
         self.regenerated_health = regenerated_health
 
 class Character:
-    def __init__(self, hp, ad):
+    def __init__(self, hp, ad, name):
         self.hp = hp
         self.ad = ad
+        self.name = name
 
     def get_hit(self, ad):
         self.hp = self.hp - ad
@@ -25,10 +28,12 @@ class Character:
     def die(self):
         print("Character died")
 
+    def is_dead(self):
+        return self.hp <= 0
+
 class Player(Character):
     def __init__(self, name, hp, ad):
-        Character.__init__(self, hp, ad)
-        self.name = name
+        Character.__init__(self, hp, ad, name)
         self.max_hp = hp
 
     def die(self):
@@ -39,23 +44,35 @@ class Player(Character):
 
 class Goblin(Character):
     def __init__(self):
-        Character.__init__(self, 100, 10)
+        Character.__init__(self, 100, 10, "Goblin")
 
 class Ork(Character):
     def __init__(self):
-        Character.__init__(self, 300, 30)
+        Character.__init__(self, 300, 30, "Ork")
+
 class Field:
     def __init__(self, enemies):
         self.enemies = enemies
         self.loot = []
 
+    def print_state(self):
+        print("You look around and see: ")
+        for i in self.enemies:
+            print(i.name)
+
     @staticmethod
     def gen_random():
-        pass
+        rand = random.randint(0, 2)
+        if rand == 0:
+            return Field([])
+        if rand == 1:
+            return Field([Ork()])
+        if rand == 2:
+            return Field([Goblin(), Goblin(), Ork()])
 
 class Map:
     def __init__(self, width, height):
-        self.state = [[]]
+        self.state = []
         self.x = 0
         self.y = 0
         for i in range(width):
@@ -66,6 +83,9 @@ class Map:
 
     def print_state(self):
         self.state[self.x][self.y].print_state()
+
+    def get_enemies(self):
+        return self.state[self.x][self.y].enemies
 
     def forward(self):
         if self.x == len(self.state) - 1:
@@ -100,7 +120,7 @@ def rest(p, m):
 
 def fight(p, m):
     enemies = m.get_enemies()
-    while len(enemies > 0):
+    while len(enemies) > 0:
         enemies[0].get_hit(p.ad)
         if enemies[0].is_dead():
             enemies.remove(enemies[0])
@@ -149,12 +169,12 @@ Commands = {
 if __name__ == '__main__':
     name = input("Enter your name: ")
     p = Player(name, 1000, 100)
-    map = Map(5, 5)
+    karte = Map(5, 5)
     print("(type help to list the commands available)\n")
     while True:
         command = input(">").lower().split(" ")
         if command[0] in Commands:
-            Commands[command[0]](p, map)
+            Commands[command[0]](p, karte)
         else:
             print("Befehl nicht gefunden!")
-        map.printstate()
+        karte.print_state()
